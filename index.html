@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AnimeTrack — Discover & Track Anime</title>
+  <meta name="description" content="Discover, review and track your favourite anime series." />
+  <!-- External CSS -->
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="topnav">
+    <a href="index.html" class="nav-brand">ANIME<span>TRACK</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="pages/browse.html">Browse</a></li>
+      <li><a href="pages/search.html">Search</a></li>
+      <li><a href="pages/favorites.html">Favorites</a></li>
+      <li><a href="pages/watchlist.html">Watchlist</a></li>
+    </ul>
+    <div class="nav-right">
+      <div class="nav-search" style="position:relative;">
+        <span style="color:var(--text-muted);">⌕</span>
+        <input type="text" id="nav-search-input" placeholder="Quick search..." autocomplete="off" />
+        <div id="search-dropdown"></div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-bg" id="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="container">
+      <div class="hero-body">
+        <div class="hero-badge">🔥 Trending This Season</div>
+        <h1 class="hero-title">Track Every<br><span class="hl">Anime</span><br>You Love</h1>
+        <p class="hero-sub">Discover thousands of anime titles, add to your watchlist, mark favorites, and never lose track of what to watch next.</p>
+        <div class="hero-actions">
+          <a href="pages/browse.html" class="btn btn-primary btn-lg">Browse Anime</a>
+          <a href="pages/search.html" class="btn btn-outline btn-lg">Search</a>
+        </div>
+        <div class="hero-stats">
+          <div><div class="stat-num" id="stat-anime">15K+</div><div class="stat-label">Anime Titles</div></div>
+          <div><div class="stat-num" id="stat-genres">70+</div><div class="stat-label">Genres</div></div>
+          <div><div class="stat-num" id="stat-free">FREE</div><div class="stat-label">No Login Needed</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <div class="container page-wrap">
+
+    <!-- TRENDING -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title"><span class="dot"></span> Trending Now</h2>
+        <a href="pages/browse.html" class="btn btn-ghost btn-sm">View All →</a>
+      </div>
+      <div class="anime-grid" id="trending-grid"></div>
+    </section>
+
+    <!-- TOP RATED -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title"><span class="dot"></span> Top Rated</h2>
+        <a href="pages/browse.html?sort=top" class="btn btn-ghost btn-sm">View All →</a>
+      </div>
+      <div class="anime-grid" id="top-grid"></div>
+    </section>
+
+    <!-- AIRING NOW -->
+    <section class="section">
+      <div class="section-head">
+        <h2 class="section-title"><span class="dot"></span> Airing This Season</h2>
+        <a href="pages/browse.html?sort=airing" class="btn btn-ghost btn-sm">View All →</a>
+      </div>
+      <div class="anime-grid" id="season-grid"></div>
+    </section>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">ANIME<span>TRACK</span></div>
+        <div class="footer-links">
+          <a href="pages/browse.html">Browse</a>
+          <a href="pages/search.html">Search</a>
+          <a href="pages/favorites.html">Favorites</a>
+          <a href="pages/watchlist.html">Watchlist</a>
+        </div>
+      </div>
+      <div class="footer-copy">© 2025 AnimeTrack · Powered by <a href="https://jikan.moe" style="color:var(--red)">Jikan API</a> · Data from MyAnimeList</div>
+    </div>
+  </footer>
+
+  <div id="toast-wrap" class="toast-container"></div>
+
+  <!-- External JS -->
+  <script src="js/app.js"></script>
+  <script>
+    const { API, renderGrid, renderSkeletons, initModal, initNavSearch, Toast } = AnimeTrack;
+
+    initModal();
+    initNavSearch();
+
+    // Load hero background from random top anime
+    async function loadHero() {
+      const data = await API.top(1);
+      const picks = data?.data?.filter(a => a.images?.jpg?.large_image_url);
+      if (picks?.length) {
+        const pick = picks[Math.floor(Math.random() * Math.min(5, picks.length))];
+        document.getElementById('hero-bg').style.backgroundImage = `url('${pick.images.jpg.large_image_url}')`;
+      }
+    }
+
+    // Load trending (currently airing, sorted by score)
+    async function loadTrending() {
+      const grid = document.getElementById('trending-grid');
+      renderSkeletons(grid, 8);
+      const data = await API.get('/top/anime?filter=airing&limit=8');
+      renderGrid(grid, data?.data);
+    }
+
+    // Load top rated
+    async function loadTop() {
+      const grid = document.getElementById('top-grid');
+      renderSkeletons(grid, 8);
+      const data = await API.top(1);
+      renderGrid(grid, data?.data?.slice(0, 8));
+    }
+
+    // Load this season
+    async function loadSeason() {
+      const grid = document.getElementById('season-grid');
+      renderSkeletons(grid, 8);
+      const data = await API.season();
+      renderGrid(grid, data?.data?.slice(0, 8));
+    }
+
+    loadHero();
+    loadTrending();
+    loadTop();
+    loadSeason();
+  </script>
+</body>
+</html>
